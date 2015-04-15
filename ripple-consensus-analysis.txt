@@ -1,0 +1,159 @@
+* Abstract
+
+* Investigation
+
+Sources:
+
+ripple.com dev docs, references, tutorials, etc.
+
+Code reviewed, all from 0.27.4 tag; 92812fe7239ffa3ba91649b2ece1e892b866ec2a
+
+
+* Findings
+
+** Code security
+
+No signatures anywhere. :(
+
+
+** What exactly is there consensus on?
+
+merkle tree of txs; is account state hashed?
+
+LedgerHash - what is this?
+
+are signatures from the consensus hashed?
+
+src/ripple/app/ledger/README.md - explains ledger process
+
+Ledger::addRaw() is hashed ledger format:
+
+void Ledger::addRaw (Serializer& s) const
+{
+    s.add32 (mLedgerSeq);
+    s.add64 (mTotCoins);
+    s.add256 (mParentHash);
+    s.add256 (mTransHash);
+    s.add256 (mAccountHash);
+    s.add32 (mParentCloseTime);
+    s.add32 (mCloseTime);
+    s.add8 (mCloseResolution);
+    s.add8 (mCloseFlags);
+}
+
+mTransHash = mTransactionMap->getHash()
+mAccountHash = mAccountStateMap->getHash()
+
+shamap/README.md for design docs
+
+SHAMapTreeNode::updateHash() is the actual hashing; looks alright from security
+point of view, but damn weird; 16x radix tree? wtf?
+
+todo: what exactly determines the shape of the tree?
+
+
+** Scalability
+
+O(n^2), just as bad as Bitcoin
+
+Unpredictable fees - set by consensus, which means network can fail quickly;
+attacks possible.
+
+10uXRP/tx * ~1tx/1kB * 0.0079 $USD/XRP = $0.079/GB to spam the ripple network.
+
+sources: https://www.ripplecharts.com - apr 15th 2015
+         https://ripple.com/knowledge_center/abuse-protection/
+
+https://wiki.ripple.com/Transaction_Fee#Calculating_the_Transaction_Fee
+
+transaction_fee = base_fee * load_factor / load_base
+
+from my server:
+
+load_base = 256
+load_factor = 256000
+base_fee_xrp = 1e-05
+
+= 0.000,079 $USD/tx ~= $8/MB to spam network
+
+
+** New node bootstrapping
+
+Ripple does not download old history; w/ bitcoin this is a major change to
+security assumptions, modulo XRP this probably isn't in ripple due to nature of
+use-cases.
+
+
+** Voting mechanism
+
+Irrelevant due to poor scaling?
+
+sources: https://wiki.ripple.com/Consensus#Scaling
+
+
+** High consensus-critical complexity
+
+features integrated directly into protocol - why?
+
+
+*** Poor coding practices
+
+e.g. boost::gregorian::date() rather than numeric constant in https://github.com/ripple/rippled/blob/7b936de32cf4d02fad44d7582eab02bc537d2686/src/ripple/module/app/ledger/Ledger.cpp#L276
+
+more recent commit did this right
+
+
+*** Binary vs. protobuf vs. json
+
+serialization/hashing code in STObject.
+
+SField - "Fields are necessary to tag data in signed transactions so that the
+binary format of the transaction can be canonicalized."
+
+Signing: SHA512(<prefix> + <serialized obj>)[0:256bits] - STObject::getSigningHash in impl/STObject.cpp:463
+
+serialized_obj is serialized in a custom tagged format, basically:
+
+    <type><name> (serialized data)
+
+with a bunch of special purpose fundemental types.
+
+variable length integer type: STAmount
+
+
+TODO: are there malleability issues? appears that format is deterministic with
+only one unique representation; need to verify how AccountTxnID actually refers
+to previous transactions
+
+
+** Upgrade mechanism
+
+https://ripple.com/files/GB-2014-02.pdf - seems to be a soft-fork-like process; note how there's no voting process
+
+relevant git commit: 7b936de32cf4d02fad44d7582eab02bc537d2686
+
+
+** No specification
+
+similar problem that bitcoin has, but even the executable specification isn't clear
+
+
+** Ledger rather than UTXO based scheme
+
+"Well formed transactions may provisionally succeed, then later fail."
+
+tx replay prevented by sequence numbers; can also use AccountTxnID to make a tx
+depend on another tx
+
+
+** Forks/Failure modes
+
+Can the network fork? What happens if a majority of validators lose data?
+
+LastLedgerSequence is interesting here, as like bitcoin it can make a tx
+impossible to include in the ledger; accounts *can* go negative, unclear as to
+under what circumstances.
+
+
+** What is the purpose of Ripple? Why do we need global consensus?
+
