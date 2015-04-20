@@ -1,0 +1,105 @@
+\documentclass{article}
+\usepackage{url}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning}
+\begin{document}
+\title{Ripple Consensus Review}
+\author{Peter Todd}
+\date{FIXME}
+\maketitle
+
+\section{Activities performed}
+
+The Ripple consensus review investigation had four major activities associated
+with it:
+
+\begin{enumerate}
+
+    \item Reviewed whitepapers and development documentation at ripple.com
+
+    \item Reviewed existing third-party critism.
+
+    \item Setup and run a full node.
+
+    \item Reviewed C++ implementation, specifically the 0.27.4 tag.\footnote{git commit 92812fe7239ffa3ba91649b2ece1e892b866ec2a}
+
+\end{enumerate}
+
+
+\section{Overall architecture}
+
+Ripple has diverged significantly from the original concept of a decentralized
+network representing money explicitly as debt relationship between
+parties.\ref{btcmag-introducing-ripple} While the concept of a debt
+relationship still exists in the form of trust lines between participants, the
+bulk of the codebase and developer documentation now focuses\footnote{For
+    instance the ``Tutorials'' section of the Ripple website only explains how
+    to create transactions that modify the ledger; there is almost no information
+available on how to actually use the trustlines feature.} on the use and
+maintenance of a global ledger of transactions and account balances.
+Additionally a native currency, XRP, has been added, which is used for
+anti-spam transaction fees\footnote{A small amount of XRP is irrovocably
+destroyed for every transaction.}, as well as to serve as a universal currency.
+
+
+\subsection{Hashing and serialization}
+
+Though various parts of the Ripple user API's and networking use industry
+standard serialization formats like JSON and Google Protobuf, for
+consensus-critical functionality Ripple uses a custom tag-length-value
+serialization and hashing scheme. This is not unexpected as industry standard
+serialization schemes rarely, if ever, account for the need to create hash
+digests from represented objects.
+
+\begin{equation}
+    \textit{Serialize}(\text{obj}) = t_0 n_0 d_0 + \hdots + t_n n_n d_n
+\end{equation}
+
+Hashing of objects generally uses the following scheme, implemented by
+STObject::getHash(), resulting in a $256\text{bit}$ digest:
+
+\begin{equation}
+    H(\text{obj}) = \text{SHA512}(p + \text{Serialize}(\text{obj}))[0:256\text{bits}]
+\end{equation}
+
+The prefix $p$ is per-object-type, guaranteeing that objects of different types
+will always have a different hash.\footnote{This is commonly known as
+\emph{tagged hashing} in the literature.} For objects containing signatures,
+such as transactions, there is a similar but separate \emph{signing hash}
+implemented by the function STObject::getSigningHash(). Unlike the standard
+hash, the signing hash does not serialize signature fields.
+
+
+\subsection{Transactions}
+
+Unlike Bitcoin, transactions increment and decrement account balances; they do
+not directly consume the output of other transactions. To prevent replay
+attacks accounts and transaction have sequence numbers; a transaction is only
+valid if the Sequence number is exactly one greater than the last-valided
+transaction from the same account. Additionally an optional AccountTxnID field
+is available for use within transactions; the transaction is only valid if the
+sending account's previously-sent transaction matches the provided hash.
+
+Authentication is performed with a simple signature scheme; a scripting system
+is not available, nor is multisignature support. To implement the latter a
+highly complex single-purpose scheme\ref{ripple-wiki-multisign} has been
+proposed.
+
+
+\subsection{Ledger}
+
+Information on the exact structure of the Ripple ledger is somewhat spotty.
+
+
+The Ripple consensus algorithm starts with a Unique Node List. 
+
+
+
+\section{}
+
+
+\bibliographystyle{plain}
+\bibliography{paper}
+
+\end{document}
