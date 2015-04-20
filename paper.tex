@@ -91,12 +91,109 @@ proposed.
 
 Information on the exact structure of the Ripple ledger is somewhat spotty.
 
+how exactly does the skiplist work?
+
+
+\subsection{Consensus}
+
+
 
 The Ripple consensus algorithm starts with a Unique Node List. 
 
 
+what happens with UNL majority is not reached?
 
-\section{}
+
+\section{Attacks}
+
+reference c3 criteria?
+
+big picture with attacks is there is not a minimum cost to them unlike PoW
+
+evaluate attacks for denial-of-service and theft potential; evaluate minimum
+cost to carry out attack; possible minimum manpower to carry out attack
+
+
+Type of attack: DoS and/or theft
+
+Minimum cost: $0, $1k, $10k, $100k
+
+Scope: targetted, broad, global
+Duration: hours, days, weeks, indefinite - How long will it take to fix the bug?
+
+we don't attempt to put a dollar figure on harm done, as depends enormously on
+how people use ripple
+
+
+\subsection{Consensus Split}
+
+1) exploit consensus failure.
+
+DoS: Cost \$0, Scope: global, Duration: hours
+Theft: Cost \$1k, Scope: varies, Duration: hours
+
+not as synergistic with other attacks; obvious flaw that will be fixed;
+time-limited attack
+
+
+\subsection{Scalability}
+
+DoS: Cost \$100k, Scope: global, Duration: weeks
+
+simply produce a lot of txs, paid for via fees, either covertely or overtly.
+System will fail, guaranteed.
+
+
+\subsection{UNL: Jurisdictional}
+
+DoS/Theft: Cost \$100k, Scope: varies, Duration: indefinite
+
+centralization attack - legal attack against centralized UNL. note
+jurisdictional issues with delegating consensus to UNL
+
+biggest issue is how can ripple compete against systems without the global
+consensus req? if I'm a bank in russia, why use ripple when it opens me to UNL
+issues?
+
+
+\subsection{Software backdoor}
+
+DoS/Theft: Cost \$0, Scope: varies, Duration: varies
+
+mention unsigned code here
+
+
+\subsection{UNL: key theft}
+
+prep: Cost \$0, Scope: global, Duration: N/A
+
+Gain control of UNL signing keys through theft/compromise. 
+
+
+\subsection{History simulation}
+
+Theft: Cost \$0, Scope: targetted, Duration: weeks
+
+from proof-of-stake terminology; simulated history is costless as no work
+expended.
+
+use backdoored software as example of how this can happen; also can happen with
+jurisdictional attacks
+
+if rippled sees two versions of history, what happens?
+
+rewrite history attack - note lack of cost to rewrite because no PoW; single
+implementation so likely we can hack all nodes at once
+
+proof-of-work has a hard bound on rewrite attacks, because can't break laws of
+physics
+
+can talk about how cost to do a simulation attack is PoW $/targets; talk about slasher rule
+
+
+\section{Synergistic Attacks}
+
+do a directed graph of likely synergistic attack sequences
 
 
 \bibliographystyle{plain}
