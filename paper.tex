@@ -97,11 +97,30 @@ how exactly does the skiplist work?
 \subsection{Consensus}
 
 
+Claims from ripple: consensus protocol will maintain correctness so long as $f
+\le (n-1)/5$ where $f$ is the number of Byzantian failures. However default UNL
+list is just $5$ entries, thus $f \le (5-1)/5 = 0.8$ - no failures can be
+tolerated.
+
+Put antoher way, you only need to compromise $20\%$ of the nodes in the UNL to
+censor a transactions/freeze funds. "failure to agree is agreement to defer"
+
+
+Is there incentive to use anything but the default UNL? Remember that if you
+choose a UNL more than $80\%$ different than others, you can be attacked on
+that basis; your full node determines validity of transactions anyway. e.g. the
+"add 1000 validators to UNL list" suggestion.
+
+mixing structure: if tx A is rejected, dependent txs are all rejected; will
+likely soon result in situation where you can't use different UNL
+
 
 The Ripple consensus algorithm starts with a Unique Node List. 
 
 
 what happens with UNL majority is not reached?
+
+test: add extra entries to UNL list, see if ledgers close, if they don't think we know threshold
 
 
 \section{Attacks}
