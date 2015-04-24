@@ -31,7 +31,7 @@ with it:
 
 Ripple has diverged significantly from the original concept of a decentralized
 network representing money explicitly as debt relationship between
-parties.\ref{btcmag-introducing-ripple} While the concept of a debt
+parties.\cite{btcmag-introducing-ripple} While the concept of a debt
 relationship still exists in the form of trust lines between participants, the
 bulk of the codebase and developer documentation now focuses\footnote{For
     instance the ``Tutorials'' section of the Ripple website only explains how
@@ -83,7 +83,7 @@ sending account's previously-sent transaction matches the provided hash.
 
 Authentication is performed with a simple signature scheme; a scripting system
 is not available, nor is multisignature support. To implement the latter a
-highly complex single-purpose scheme\ref{ripple-wiki-multisign} has been
+highly complex single-purpose scheme\cite{ripple-wiki-multisign} has been
 proposed.
 
 
@@ -94,10 +94,88 @@ Information on the exact structure of the Ripple ledger is somewhat spotty.
 how exactly does the skiplist work?
 
 
-\subsection{Consensus}
+\subsection{Unique Node List}
+
+The actual process of determining what version of the ledger is correct starts
+with the Unique Node Listi, (UNL) a list of public keys meant to be associated
+with active nodes the node operator believes are
+``unique''.\cite{ripple-wiki-unl} Ripple Labs suggests that UNL's ``should have
+100+ nodes on them.''\cite{ripple-wiki-unl} and provides a ``starter'' UNL at
+\url{https://ripple.com/ripple.txt} with $5$ to $8$ nodes.\footnote{Exactly how this UNL is
+generated is unknown; the author downloaded it on multiple occasions getting
+between $5$ to $8$ nodes each time, mostly the same.}
+
+Through the Ripple Protocol Consensus Algorithm\cite{ripple-consensus-paper}
+nodes on the UNL vote to determine the contents of the Ripple ledger. While the
+actual protocol contains a number of rounds of proposals and voting the end
+result can be described as basically a supermajority vote: a transaction is
+only approved if $80\%$ of the UNL of a server agrees with
+it.\cite[3.2]{ripple-consensus-paper} Put another way, if $20\%$ of the UNL
+choose to reject a transaction, it will not be included in the ledger.
+
+Different nodes may chose to use different UNLs; if the UNLs do not
+sufficiently overlap global consensus is not guaranteed because different UNL
+``cliques'' can come to consensus independently of each other. For instance
+Figure \ref{fig:unl-clique-disjoint} shows a simple example with two UNL
+cliques, red and blue, that have forked because of insufficient connectivity,
+resulting in the forked blockchain shown in Figure \ref{fig:unl-clique-disjoint-blockchain}.
+
+Increasing the connectivity past the $20\%$ threshold, as shown in Figure
+\ref{fig:unl-clique-consensus}, brings both cliques into agreement. However
+what happens to the blockchain? The Ripple Protocol Consensus Algorithm paper
+is unclear on this point. For instance, the loss and restoration of
+connectivity may have been associated with network latency. The paper does
+state that "nodes who’s latency grows larger than a preset bound $b$ are
+removed from all UNLs"\cite[3.4.1]{ripple-consensus-paper} but does not say if
+this removal is meant to be permanent\footnote{In the existing implementation
+restarting the node does reload the UNL set from the config file.} nor if by
+``all'' they refer to removal from UNLs on all nodes in the network.
+Additionally while the author did not have sufficient time to investigate this
+point fully, the source code doesn't appear to have any provision for
+reorganizations of the ledger when a longer fork is detected.
+
+Regardless, it is certain that following a fork caused by disjoint UNL cliques
+the losing side simply has to discard some or all history, as seen in Figure
+\ref{fig:unl-clique-post-fork}, possibly resulting in double-spends and
+associated financial losses.
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/unl-clique-disjoint.eps}
+    \caption{Disjoint UNL}
+    \label{fig:unl-clique-disjoint}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/unl-clique-disjoint-blockchain.eps}
+    \caption{Forked blockchain}
+    \label{fig:unl-clique-disjoint-blockchain}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/unl-clique-consensus.eps}
+    \caption{UNL cliques in consensus}
+    \label{fig:unl-clique-consensus}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/unl-clique-reorganized-blockchain.eps}
+    \caption{Post-fork reorganization}
+    \label{fig:unl-clique-post-fork}
+\end{figure}
 
 
-Claims from ripple: consensus protocol will maintain correctness so long as $f
+
+Similarly for a UNL of $n$ nodes it would
+take $(4n + 1)/5$ Byzantine failures for an incorrect transaction to be
+confirmed.
+
+
+
+Claims from ripple: consensus protocol\cite{ripple-consensus-paper} will maintain correctness so long as $f
 \le (n-1)/5$ where $f$ is the number of Byzantian failures. However default UNL
 list is just $5$ entries, thus $f \le (5-1)/5 = 0.8$ - no failures can be
 tolerated.
@@ -207,7 +285,7 @@ implementation so likely we can hack all nodes at once
 proof-of-work has a hard bound on rewrite attacks, because can't break laws of
 physics
 
-can talk about how cost to do a simulation attack is PoW $/targets; talk about slasher rule
+can talk about how cost to do a simulation attack is PoW targets; talk about slasher rule
 
 
 \section{Synergistic Attacks}
