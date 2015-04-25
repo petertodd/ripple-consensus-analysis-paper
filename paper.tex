@@ -2,6 +2,7 @@
 \usepackage{url}
 \usepackage{mathtools}
 \usepackage{tikz}
+\usepackage{multirow}
 \usetikzlibrary{arrows,positioning}
 \begin{document}
 \title{Ripple Consensus Review}
@@ -118,7 +119,11 @@ sufficiently overlap global consensus is not guaranteed because different UNL
 ``cliques'' can come to consensus independently of each other. For instance
 Figure \ref{fig:unl-clique-disjoint} shows a simple example with two UNL
 cliques, red and blue, that have forked because of insufficient connectivity,
-resulting in the forked blockchain shown in Figure \ref{fig:unl-clique-disjoint-blockchain}.
+resulting in the forked blockchain shown in Figure
+\ref{fig:unl-clique-disjoint-blockchain}. More complex failure modes have also
+been identified, such as the ``less than majority evil'' failure mode
+identified by Gregory Maxwell,\cite{gmaxwell-btctalk-ripple} and ``separate
+supermajorities'' mode identified by Andrew Miller.\cite{amiller-rippletalk}
 
 Increasing the connectivity past the $20\%$ threshold, as shown in Figure
 \ref{fig:unl-clique-consensus}, brings both cliques into agreement. However
@@ -135,8 +140,8 @@ point fully, the source code doesn't appear to have any provision for
 reorganizations of the ledger when a longer fork is detected.
 
 Regardless, it is certain that following a fork caused by disjoint UNL cliques
-the losing side simply has to discard some or all history, as seen in Figure
-\ref{fig:unl-clique-post-fork}, possibly resulting in double-spends and
+the losing side simply has to discard some or all history (Figure
+\ref{fig:unl-clique-post-fork}) possibly resulting in double-spends and
 associated financial losses.
 
 \begin{figure}
@@ -167,11 +172,48 @@ associated financial losses.
     \label{fig:unl-clique-post-fork}
 \end{figure}
 
+\subsection{Choosing the Unique Node List}
 
+How should Ripple node administrators pick their Unique Node List? Ripple Labs
+provides little, if any, concrete advice beyond the ``starter UNL'' they
+provide. Let's look at this problem from another angle: Why shouldn't a node
+operator just use the default UNL?
 
-Similarly for a UNL of $n$ nodes it would
-take $(4n + 1)/5$ Byzantine failures for an incorrect transaction to be
-confirmed.
+Let's assume the node operator does not know what UNL other nodes in the
+economic majority have chosen to use. They do however know the default UNL
+provided by Ripple Labs, and they have a reasonable belief that other node
+operators also know that UNL and may also be using it. The node operator's goal
+is to limit losses; the best case is their node stays in consensus with other
+nodes. Second best is they suffer a denial of service attack causing their node
+to stop processing some or all transactions. Worst case is their node accepts
+transactions that other nodes do not, making possible double-spend attacks.
+Figure \ref{fig:unl-choice-plot} shows the outcomes of various possible
+decisions by them and other node operators, ranging from $100\%$ default UNL,
+$50\%$ default UNL, and $10\%$ default UNL.
+
+In every circumstance node operators can reduce the risk of losses due to
+consensus failures by removing non-default UNL entries, with the least risky
+option being to simply stick with the default UNL of $100\%$ Ripple Labs
+controlled nodes. This is particularly acute given the low profit margins of
+many financial transactions: while a denial-of-service halts incoming revenue,
+a double-spend attack can quickly drain working capital, quite possibly without
+any hope of ever recovering the stolen funds.
+
+A closely related issue is what incentive does a node operator have to publicly
+perform validation services? Ripple currently has no compensation mechanism for
+public validators, yet validation at minimum raises potential legal issues such
+as lawsuits for negligence. Again, the least-risk option is to not publicly
+validate the Ripple ledger.
+
+\begin{table}
+    \begin{tabular}{c|c|c|c|}
+        ~ & \multicolumn{3}{c}{Majority UNL \%} \\
+        \multirow{3}{*}{You} & $100\%$ & $50\%$ & $10\%$ \\ \hline
+        $100\%$ & Consensus & DoS & DoS \\ \hline
+        $50\%$ & DoS & DoS & D.S. \\ \hline
+        $10\%$ & D.S & D.S & D.S. \\
+    \end{tabular}
+\end{table}
 
 
 
