@@ -2,7 +2,7 @@
 \usepackage{url}
 \usepackage{mathtools}
 \usepackage{tikz}
-\usepackage{multirow}
+% \usepackage{multirow}
 \usetikzlibrary{arrows,positioning}
 \begin{document}
 \title{Ripple Consensus Review}
@@ -172,6 +172,7 @@ associated financial losses.
     \label{fig:unl-clique-post-fork}
 \end{figure}
 
+
 \subsection{Choosing the Unique Node List}
 
 How should Ripple node administrators pick their Unique Node List? Ripple Labs
@@ -208,44 +209,57 @@ validate the Ripple ledger.
 \begin{table}
     \begin{tabular}{c|c|c|c|}
         ~ & \multicolumn{3}{c}{Majority UNL \%} \\
-        \multirow{3}{*}{You} & $100\%$ & $50\%$ & $10\%$ \\ \hline
+        % \multirow{3}{*}{You} & $100\%$ & $50\%$ & $10\%$ \\ \hline
         $100\%$ & Consensus & DoS & DoS \\ \hline
-        $50\%$ & DoS & DoS & D.S. \\ \hline
-        $10\%$ & D.S & D.S & D.S. \\
+        $50\%$ & DoS & DoS & Doublespend \\ \hline
+        $10\%$ & Doublespend & Doublespend & Doublespend \\
     \end{tabular}
 \end{table}
 
 
+\section{Attack scenarios}
 
-Claims from ripple: consensus protocol\cite{ripple-consensus-paper} will maintain correctness so long as $f
-\le (n-1)/5$ where $f$ is the number of Byzantian failures. However default UNL
-list is just $5$ entries, thus $f \le (5-1)/5 = 0.8$ - no failures can be
-tolerated.
+To evaluate potential attacks on the Ripple network we look at three factors:
 
-Put antoher way, you only need to compromise $20\%$ of the nodes in the UNL to
-censor a transactions/freeze funds. "failure to agree is agreement to defer"
+\begin{itemize}
 
+    \item \textbf{Type:} What is the effect of the attack? Denial of Service
+          and/or theft? Or is the attack mostly useful in preparation for another
+          type of attack?
 
-Is there incentive to use anything but the default UNL? Remember that if you
-choose a UNL more than $80\%$ different than others, you can be attacked on
-that basis; your full node determines validity of transactions anyway. e.g. the
-"add 1000 validators to UNL list" suggestion.
+    \item \textbf{Cost:} What is a probable minimum cost to carry out the attack, for
+          the people able to do the attack? For instance, a technical attack
+          that can be launched by ``bored teenagers'' will have an essentially
+          zero cost while a long-term rewrite of a proof-of-work blockchain has
+          a reasonably well-defined cost.
 
-mixing structure: if tx A is rejected, dependent txs are all rejected; will
-likely soon result in situation where you can't use different UNL
+    \item \textbf{Scope:} Who is affected by the attack? Is this a targetted attack,
+          mainly affecting a one or two targets? An attack with broad impact? Or
+          an attack with global impact on all Ripple users?
 
+    \item \textbf{Duration:} How long will it take before the attack is
+          neutralized?  This may be a matter of hours to write and distribute a
+          simple software patch\footnote{The author personally stopped the
+          CVE-2013-4627 attack on the Bitcoin network in a few hours of rushed
+          work in the middle of the night.}, to indefinitely long for some
+          attacks where recovery is impossible.
 
-The Ripple consensus algorithm starts with a Unique Node List. 
+    \item \textbf{Probability:} How likely is it for the Ripple network to be
+          attacked this way?
 
+\end{itemize}
 
-what happens with UNL majority is not reached?
+We do \emph{not} try to determine the monetary impact of the attack, because we
+are unable to predict how the Ripple network will be used. For instance, while
+a double-spend attack may have the same basic impact on a $\$100/\text{day}$
+small business as it would on a $\$1,000,000,000/\text{day}$ multinational, the
+latter could lose orders of magnitude more money for what it at a technical
+level basically the same attack. A closely issue with attempting to predict
+monetary losses is that at some point losses can be sufficiently high that they
+create situations where social consensus can decide that the losses simply must
+be reversed. For instance, Vericoin community chose to do a hard-fork of their
+alt-currency to undo the impact of a major theft.\cite{coindesk-vericoin}
 
-test: add extra entries to UNL list, see if ledgers close, if they don't think we know threshold
-
-
-\section{Attacks}
-
-reference c3 criteria?
 
 big picture with attacks is there is not a minimum cost to them unlike PoW
 
@@ -266,21 +280,103 @@ how people use ripple
 
 \subsection{Consensus Split}
 
-1) exploit consensus failure.
+The attacker exploits a difference in behavior between different
+implementations/versions of the Ripple protocol. The result of the attack can
+be a simple denial of service due to the Ripple network being unable to process
+transactions, or with more sophistication, the attacker can fork the Ripple
+ledger/blockchain and use the fork to doublespend. The attack is stopped by
+identifying it, and then distributing software patches. Provided the Ripple
+network is well monitored consensus split attacks can be stopped fairly
+quickly; the March 2013 Bitcoin chain fork\cite{bip50} was resolved in a matter
+of hours by contacting mining pools. A similar response could happen on Ripple
+by contacting validating nodes commonly used in UNLs.\footnote{Another reason
+to use the UNL provided Ripple Labs.}
 
-DoS: Cost \$0, Scope: global, Duration: hours
-Theft: Cost \$1k, Scope: varies, Duration: hours
+Note that a consensus split may also happen by accident; prior consensus splits
+in cryptocurrency systems have almost always been accidental. Equally, that
+consensus splits can happen by accident clearly shows that the minimum cost to
+perform this attack is zero. However, due to the limited number of consensus
+bugs available to exploit in a given (set of) versions of the Ripple protocol
+in use and the fast response time possible to consensus splits the potential of
+this class of attack for long-term attacks on the network is limited.
+
+Risk factors:
+
+\begin{itemize}
+
+    \item The main implementation of the Ripple protocol, \emph{rippled}, does
+        not cleanly separate the consensus-critical part of the codebase from
+        the non-consensus-critical part.\footnote{The consensus-critical
+            portions of Bitcoin Core codebase are currently being separated
+            into a stand-alone \emph{libconsensus} library.}
+
+    \item The Ripple protocol itself is extremely complex, with many different
+          types of transactions, and all functionality being implemented directly
+          in the protocol itself.
+
+    \item Improvements to Ripple frequently require changing the
+          consensus-critical codebase rather than user software. For instance
+          while on Bitcoin the implementation of multisig was possible without
+          modification to the protocol\cite{bip19} in Ripple the lack of
+          extension capabilities such as scripting require a consensus-critical
+          change.\cite{ripple-wiki-multisign}\footnote{P2SH was \emph{not}
+          required for multisig to be implemented.}
+
+\end{itemize}
+
+DoS: Cost \$0, Scope: global, Duration: hours, Prob: high
+Theft: Cost \$1k, Scope: varies, Duration: hours, Prob: high
 
 not as synergistic with other attacks; obvious flaw that will be fixed;
 time-limited attack
 
 
-\subsection{Scalability}
+\subsection{Transaction Flood}
 
-DoS: Cost \$100k, Scope: global, Duration: weeks
+DoS: Cost depends, Scope: broad, Duration: depends
 
-simply produce a lot of txs, paid for via fees, either covertely or overtly.
-System will fail, guaranteed.
+The attacker creates large numbers of transactions - either covertely or
+overtly - until the Ripple network fails due to overload, or more likely,
+Ripple users are priced out of their ability to use the Ripple network.
+Transactions pay a minimum fee per transaction by destroying XRP; the fee per
+transaction is set by a vote between all validators on the UNL list. In the
+short to medium term such an attack would quickly drive up that fee. A
+succesful attack requires deep pockets as the attacker must outspend other
+Ripple users.
+
+
+Risk factors:
+
+\begin{itemize}
+
+    \item Ripple Labs plans\cite{cointelegraph-ripple-aml} to require verified
+        user identification to use the Ripple network in the near future.  When
+        implemented this will make it easy to determine who is doing a covert
+        transaction flood attack and restrict their access to the network.
+
+    \item The global consensus ledger has inherently poor $O(n^2)$ scaling;
+        even in the absense of a malicious attack the poor scalability of the
+        ledger is a threat to the viability of Ripple.
+
+    \item A clever attacker wishing to overtly attack the Ripple network can
+        masquerade their traffic as legit economic activity; from the point of
+        view of Ripple Labs - a major XRP owner - such an attack may not even
+        be considered an attack!\footnote{Similar to the debates in the Bitcoin
+        ecosystem about whether or not fee-paying uses of the Bitcoin
+        blockchain for non-Bitcoin-denominated transactions constitute
+        ``attacks''.}
+
+    \item Attacking the poor scalability of Ripple is highly synergistic with
+        attacks depending on the high centralization of the Ripple network as
+        even ``unsuccesful'' scalability attacks drive further centralization.
+        For instance, if the response to a scalability attack is for Ripple
+        Labs to beef up the validation nodes they control, and users stop
+        running full nodes themselves, the network is more vulnerable to any
+        attacks on those centrally managed validation nodes.
+
+\end{itemize}
+
+
 
 
 \subsection{UNL: Jurisdictional}
@@ -307,6 +403,13 @@ mention unsigned code here
 prep: Cost \$0, Scope: global, Duration: N/A
 
 Gain control of UNL signing keys through theft/compromise. 
+
+
+\subsection{Validator Fear, Uncertainty, and Doubt}
+
+make people afraid to run validating nodes
+
+illegal data
 
 
 \subsection{History simulation}
