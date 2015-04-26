@@ -592,9 +592,84 @@ Risk factors:
 
 \end{itemize}
 
-\section{Synergistic Attacks}
 
-do a directed graph of likely synergistic attack sequences
+\section{Attack flowchart}
+
+Figure \ref{fig:attack-flowchart} shows some of the stronger synergies between
+different attacks.
+
+Let's go through a full scenario, involving multiple attacks at once.  Ripple
+Labs has diversified their default UNL such that the $80\%$ of the validators
+are run by publicly known institutions evenly spread across the following five
+countries, United States, France, Switzerland, Russia, and China, with the
+remaining fifth being controlled by pseudoanonymous ``DarkWeb'' entities like
+The Silk Road Five, and Agora Market. As any one entity only comprises at most
+$1/6\text{th}$ of the UNL no single actor can block transactions.
+
+The Russian government has issued a court order seizing assets of Royal Dutch
+Shell, who has recently received funds from Naftogaz Ukraine to develop a new
+fracking project. Naftogaz in turn owes Russia for unpaid natural gas imports -
+quite a lot more than the funds Shell has, but simply punishing them for
+working with Naftogaz is a good start.
+
+By itself Russia is unable to freeze Shell's assets on the Ripple ledger
+through coercion of Russian-jurisdiction validators. So Russia begins with a
+transaction flood attack, slowly increasing load on the Ripple network to
+$10\text{MB}/\text{sec}$ of transactions. As a cover story a new
+gambling-oriented MMORPG is created that uses the Ripple ledger to record user
+accounts; Ripple Labs is happy to sell them the XRP to cover transaction fees.
+
+The transaction flood results in the pseudoanonymous ``DarkWeb'' validators
+quitting - the Tor network is too slow to handle the load, and they worry
+they're real identities will be discovered if they move their validator nodes
+to clearnet hosting.
+
+At this point Russia with $20\%$ UNL control could simply vote to freeze
+Shell's assets, achieving a denial-of-service. However, it's decided it would
+be better if the funds were actually recovered instead.
+
+Russia sets up a fake Chinese oil importer, hiring another Chinese company to
+do the actual transportation, and has them contact Shell asking to purchase
+some oil. They also find a wealthy Chinese investor with \$100 million USD
+worth of yuan in an account with a major Chinese bank, and has that investor
+``invest'' in the new importer. Meanwhile Russia's cyberwarfare team gets to
+work, succesfully compromising the Swiss and French validation nodes, and
+using the fact that they have agents in major Ukrainian ISPs to sybil attack
+the Ukrainian-based Shell office actually handling the sale. They can't
+compromise the US nodes - they're on a newer version - but they do happen to
+find a new zero-day consensus bug in the newer version.
+
+On the day of the sale unknown to Shell their Ukrainian office's internet
+connection is being filtered. The IT staff at their accounting office voices
+concern when their Ripple node monitoring tools say that the US validators just
+went off-line, although they're somewhat reassured when they hear news that the
+US nodes just hit a consensus issue. The captain says there's bad weather
+coming in, so they need to leave the port ASAP - with France and Switzerland
+approving the transaction they have confidence that the Free World has approved
+the money transfer.
+
+What's actually happened is Russian cyberwarfare experts created a fake
+consensus uses stolen Swiss and French private keys. Russia of course
+officially signed this fake consensus, as well as the real consensus, taking
+the position this was an above-the-board court ordered operation; China also
+signed, but doesn't officially say why. The wealthy Chinese investor
+conveniently claims to have suddenly found out about the ``fake'' oil importer
+and on the real Ripple ledger has the funds frozen by the Chinese bank backing
+them - not a big deal with the money still sitting in the original account he
+deposited it too, still under Chinese jurisdiction.
+
+Shell's Ukrainian office finally realises something is wrong after two hours of
+debugging, trying to figure out why an exchange wasn't seeing their transaction
+attempting to sell that yuan for USD. By that time the ship is in international
+waters, and is happy to keep steaming to China, where upon the oil is kept for
+the next ten years while the Chinese courts argue what to do with it.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/attack-flowchart.eps}
+    \caption{Attack flowchart}
+    \label{fig:attack-flowchart}
+\end{figure}
 
 
 \bibliographystyle{plain}
