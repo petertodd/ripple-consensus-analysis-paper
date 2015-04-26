@@ -175,6 +175,7 @@ associated financial losses.
 
 
 \subsection{Choosing the Unique Node List}
+\label{choosing-the-unl}
 
 How should Ripple node administrators pick their Unique Node List? Ripple Labs
 provides little, if any, concrete advice beyond the ``starter UNL'' they
@@ -239,7 +240,7 @@ To evaluate potential attacks on the Ripple network we look at three factors:
           zero cost while a long-term rewrite of a proof-of-work blockchain has
           a reasonably well-defined cost.
 
-    \item \textbf{Scope:} Who is affected by the attack? Is this a targetted attack,
+    \item \textbf{Scope:} Who is affected by the attack? Is this a targeted attack,
           mainly affecting a one or two targets? An attack with broad impact? Or
           an attack with global impact on all Ripple users?
 
@@ -267,24 +268,15 @@ be reversed. For instance, Vericoin community chose to do a hard-fork of their
 alt-currency to undo the impact of a major theft.\cite{coindesk-vericoin}
 
 
-big picture with attacks is there is not a minimum cost to them unlike PoW
-
-evaluate attacks for denial-of-service and theft potential; evaluate minimum
-cost to carry out attack; possible minimum manpower to carry out attack
-
-
-Type of attack: DoS and/or theft
-
-Minimum cost: $0, $1k, $10k, $100k
-
-Scope: targetted, broad, global
-Duration: hours, days, weeks, indefinite - How long will it take to fix the bug?
-
-we don't attempt to put a dollar figure on harm done, as depends enormously on
-how people use ripple
-
-
 \subsection{Consensus Split}
+
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        DoS   & $\$0$ & Global & Hours & Very High \\
+        Theft & $\$1\text{k}$ & Targeted & Hours & Medium
+    \end{tabular}
+\end{center}
 
 The attacker exploits a difference in behavior between different
 implementations/versions of the Ripple protocol. The result of the attack can
@@ -330,16 +322,15 @@ Risk factors:
 
 \end{itemize}
 
-DoS: Cost \$0, Scope: global, Duration: hours, Prob: high
-Theft: Cost \$1k, Scope: varies, Duration: hours, Prob: high
-
-not as synergistic with other attacks; obvious flaw that will be fixed;
-time-limited attack
-
 
 \subsection{Transaction Flood}
 
-DoS: Cost depends, Scope: broad, Duration: depends
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        DoS & $>\$100\text{k}$ & Broad & Varies & Low
+    \end{tabular}
+\end{center}
 
 The attacker creates large numbers of transactions - either covertely or
 overtly - until the Ripple network fails due to overload, or more likely,
@@ -383,61 +374,223 @@ Risk factors:
 \end{itemize}
 
 
+\subsection{Coercion of validators}
 
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        DoS & $>\$100\text{k}$ & Targeted & Indefinite & High \\
+        DoS & $>\$1\text{M}$ & Global & Indefinite & Medium \\
+        Theft & $>\$100\text{k}$ & Targeted & Indefinite & Medium \\
+        Theft & $>\$1\text{M}$ & Global & Indefinite & Low
+    \end{tabular}
+\end{center}
 
-\subsection{UNL: Jurisdictional}
+Validators are coerced through poltical/legal/criminal means into attacking
+some or all Ripple users by preventing valid transactions from entering the
+ledger (DoS) and/or by allowing invalid transactions to enter the ledger.
+(theft) The cost estimates above are very rough, and assuming the attack is via
+legal means; the cost may potentially be as low as zero in some scenarios like
+blackmail. In preparation for this attack the attackers may also attempt to
+reduce the number of validators by with, for instance, a transaction flood
+attack.
 
-DoS/Theft: Cost \$100k, Scope: varies, Duration: indefinite
+Risk factors:
 
-centralization attack - legal attack against centralized UNL. note
-jurisdictional issues with delegating consensus to UNL
+\begin{itemize}
 
-biggest issue is how can ripple compete against systems without the global
-consensus req? if I'm a bank in russia, why use ripple when it opens me to UNL
-issues?
+    \item The default UNL list and incentives against operating or using
+        non-official validators discussed in Section \ref{choosing-the-unl}
+        significantly increase the effectiveness of a coercion attack as nearly
+        all Ripple users will be affected. Equally, in the event of a coercion
+        attack there are still significant downsides to adopting a different
+        UNL.
 
+    \item Similarly this attack is synergistic with transaction flooding and
+        other attacks on the scalability of the network, reducing the number of
+        validators that need to be coerced.
+
+    \item The rippled node implementation does not check full history. This
+        means if validators sign an invalid ledger, the transactions that make
+        it invalid can be hidden from Ripple users. Equally, even with
+        detection, the fact that Ripple users can be asked to simply
+        restart/reinstall their nodes to get past the invalid history may
+        significantly reduce the social barriers to creating an invalid ledger.
+
+    \item The Ripple protocol is constructed such that it is possible to create
+        many, although not all, types of fraud
+        proofs\cite{irc-btcdev-gmaxwell-fraud-proof, btctalk-pkt-fraud-proofs}
+        required to prove an invalid ledger. While the software does not
+        currently implement fraud proofs, this is functionality that could be
+        added in the future without a change to the consensus. If widely used
+        fraud proofs could prevent some types of coercion attacks that force
+        validators to create invalid ledgers by making it likely for the result
+        of the attack to be DoS rather than profitable theft. In short, the
+        attack would simply shut the Ripple network down for all users rather
+        than result in a succesful theft.
+
+    \item Some people would argue that the recently announced
+        plans\cite{cointelegraph-ripple-aml} to require verified user
+        identification to use the Ripple network in the near future are an
+        example of a succesful coercion attack. It can be argued that Ripple
+        Labs is increasing the risk of coercion attacks by simultaneously
+        adopting a ``regulator friendly'' position and promoting the use of
+        Ripple across many different jurisdictions.
+
+\end{itemize}
 
 \subsection{Software backdoor}
 
-DoS/Theft: Cost \$0, Scope: varies, Duration: varies
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        Varies & $\$0$ & Broad & Weeks & High \\
+    \end{tabular}
+\end{center}
 
-mention unsigned code here
+The attacker inserts a backdoor into a widely used Ripple protocol
+implementation. (e.g. the rippled node software) The attacker may be an
+internal Ripple Labs employee, an external member of the public submitting a
+pull-request, or they may compromise the software actually downloaded by
+end-users by compromising binary or sourcecode hosting. (e.g. GitHub)
+
+Risk factors:
+
+\begin{itemize}
+
+    \item All relevant software is open source, allowing for third-party
+        review. Ripple Labs also has a bug bounty program, which can
+        incentivise that review.
+
+    \item Ripple Labs appears to use GitHub - a third party -
+        as their master sourcecode repository, with development happening
+        through pull-requests on GitHub. While this does place trust in a
+        third-party, PGP signing sourcecode during development can mitigate
+        this risk. However there appears to be no PGP signatures on any git
+        commits, giving Ripple Labs little ability to audit who wrote what
+        code.
+
+    \item \textbf{Currently Ripple Labs does not provide a secure way to
+        download any of their software.} While binaries are available, the
+        mechanism to download them is a Ubuntu package repository over insecure
+        HTTP; while source code is available through git, neither commits nor
+        release tags are signed in anyway. \textbf{This is a serious ommission
+        that has lead to significant monetary losses in the past.} Ripple Labs
+        should be following industry best-practice by signing git commits and
+        tags\cite{wladimir-git-pgp} as well as PGP signing their Ubuntu
+        packages.
+
+\end{itemize}
 
 
-\subsection{UNL: key theft}
+\subsection{Theft of validator secret keys}
 
-prep: Cost \$0, Scope: global, Duration: N/A
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        Precursor & $\$0$ & N/A & N/A & Unknown \\
+    \end{tabular}
+\end{center}
 
-Gain control of UNL signing keys through theft/compromise. 
+The attacker steals illegitimate control of the secret keys used by validators,
+particularly the validators in the default UNL. The theft may happen via an
+exploit, backdoor, compromised hosting company, etc. While not useful for the
+attacker in of itself, the stolen keys can be used for further atttacks such as
+DoS or a simulated ledger attack.
+
+A closely related attack is to compromise the Ripple website, and trick people
+into downloading a default UNL list consisting of only attacker controlled
+nodes.
+
+Risk factors:
+
+\begin{itemize}
+
+    \item Due to the high centralization of UNL validators, a relatively small
+        number of validators need to be compromised for a succesful attack.
+
+    \item Most validators are running nearly the same, if not the exact same,
+        software, making it likely for backdoor/exploit attack to succesfully
+        exfiltrate the secret keys. Due to the high consensus-critical
+        complexity of the Ripple protocol and lack of a consensus library
+        alternate validator implementations are currently infeasible, making it
+        difficult to change this situation.
+
+    \item The rippled implementation doesn't yet appear to support separating
+        the validation/consensus and signing functionality into different
+        machines, or even different user accounts. (possibly Ripple Labs has
+        internal-use-only improvements)
+
+    \item Details about the operational security practices of the validators on
+        the default UNL is unavailable, making it difficult to assess risk.
+
+    \item The Ripple P2P protocol does make it possible to operate validators
+        without the nodes themselves accepting public traffic; the signatures
+        produced by the validating nodes are distributed via an anonymizing
+        flood-fill network. This setup is recommended by Ripple Labs
+        documentation and makes remote attacks significantly more difficult.
+
+\end{itemize}
 
 
-\subsection{Validator Fear, Uncertainty, and Doubt}
+\subsection{Simulated ledger}
 
-make people afraid to run validating nodes
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Type & Cost & Scope & Duration & Probability \\ \hline
+        Theft & $>\$1\text{k}$ & Targeted & Days & N/A
+    \end{tabular}
+\end{center}
 
-illegal data
+An attacker with the ability to create signatures from nodes on the UNL can
+create an entirely simulated ledger in parallel to the ``official'' Ripple
+ledger, containing any transaction the attacker wishes. In conjunction with
+sybil attacking the target the attacker can then perform double-spend attacks.
+Sybil attacks are relatively cheap, requiring just the aquisition of a large
+number of IP addresses, e.g. via cloud hosting and/or botnet rental. In some
+situations sybil attacks can even have zero cost, such as the internal IT staff
+within the target with access to network infrastructure, the target's ISP, or
+government actors with MITM capabilities such as the
+NSA.\cite{schneier-nsa-mitm}
 
+Risk factors:
 
-\subsection{History simulation}
+\begin{itemize}
 
-Theft: Cost \$0, Scope: targetted, Duration: weeks
+    \item Because the Ripple consensus is determined by signatures creating a
+        simulated ledger is a zero-cost attack, the ``costless
+        simulation''\cite[4.2]{apoelstra-on-stake} problem. Proof-of-work
+        ledgers in comparison have very well-defined costs that discourage
+        attacks and incentivise detection.\footnote{On the Bitcoin network even
+            if the attacker can steal the hashing power needed to simulate
+        history for free the miners involved lose money from the attack and
+    have strong monetary incentives to detect and stop it.}
 
-from proof-of-stake terminology; simulated history is costless as no work
-expended.
+    \item There are no direct incentives built into the Ripple protocol to
+        discourage validators from allowing their private keys to sign
+        simulated ledgers. By comparison the Slasher proof-of-stake algorithm
+        attempts to disincentivise simulated history by destroying valuable
+        bonds owned up by participants in the consensus
+        process.\cite{ethereum-blog-slasher}
 
-use backdoored software as example of how this can happen; also can happen with
-jurisdictional attacks
+    \item The lack of incentive may invite coercion attacks, as the validators
+        being coerced into signing a simulated ledger have no direct incentive
+        not too. For instance a court could order a validator to assist in a
+        simulation attack on a target as a way of recovering funds held by the
+        target.
 
-if rippled sees two versions of history, what happens?
+    \item Simulation attacks are made significantly easier by the fact that the
+        Ripple consensus protocol will remove validators from the UNL if they
+        appear to have failed.\cite[3.4.2]{ripple-consensus-paper} With the
+        target sybil attacked the attacker can prevent the target from learning
+        that the other validators have \emph{not} failed. When those validators
+        are removed from the UNL due to the simulated failure the attacker does
+        not need to compromise/coerce as many validators as before. Equally, if
+        the target is using network split detection, the attacker can make the
+        non-compromised validators \emph{actually} fail as preparation for the
+        attack. Again, the lack of incentive to run a validator is problematic.
 
-rewrite history attack - note lack of cost to rewrite because no PoW; single
-implementation so likely we can hack all nodes at once
-
-proof-of-work has a hard bound on rewrite attacks, because can't break laws of
-physics
-
-can talk about how cost to do a simulation attack is PoW targets; talk about slasher rule
-
+\end{itemize}
 
 \section{Synergistic Attacks}
 
