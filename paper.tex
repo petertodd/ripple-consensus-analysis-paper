@@ -1,8 +1,9 @@
 \documentclass{article}
 \usepackage{url}
+% \usepackage{showframe}
 \usepackage{mathtools}
 \usepackage{tikz}
-% \usepackage{multirow}
+\usepackage{multirow}
 \usetikzlibrary{arrows,positioning}
 \begin{document}
 \title{Ripple Consensus Review}
@@ -188,7 +189,7 @@ is to limit losses; the best case is their node stays in consensus with other
 nodes. Second best is they suffer a denial of service attack causing their node
 to stop processing some or all transactions. Worst case is their node accepts
 transactions that other nodes do not, making possible double-spend attacks.
-Figure \ref{fig:unl-choice-plot} shows the outcomes of various possible
+Table \ref{tbl:unl-outcomes} shows the outcomes of various possible
 decisions by them and other node operators, ranging from $100\%$ default UNL,
 $50\%$ default UNL, and $10\%$ default UNL.
 
@@ -207,13 +208,18 @@ as lawsuits for negligence. Again, the least-risk option is to not publicly
 validate the Ripple ledger.
 
 \begin{table}
-    \begin{tabular}{c|c|c|c|}
-        ~ & \multicolumn{3}{c}{Majority UNL \%} \\
-        % \multirow{3}{*}{You} & $100\%$ & $50\%$ & $10\%$ \\ \hline
-        $100\%$ & Consensus & DoS & DoS \\ \hline
-        $50\%$ & DoS & DoS & Doublespend \\ \hline
-        $10\%$ & Doublespend & Doublespend & Doublespend \\
+    \centering
+
+    \begin{tabular}{cc|c|c|c}
+        \multicolumn{2}{c}{} & \multicolumn{3}{c}{Majority} \\
+        \multicolumn{2}{c}{} & $100\%$ & $50\%$ & $10\%$ \\ \cline{3-5}
+        \multirow{3}{*}{Local} & $100\%$ & Consensus & DoS & DoS \\ \cline{2-5}
+        ~ & $50\%$ & DoS & DoS & Doublespend \\ \cline{2-5}
+        ~ & $10\%$ & Doublespend & Doublespend & Doublespend \\
     \end{tabular}
+
+    \caption{Worst-case outcomes of default UNL \% choices}
+    \label{tbl:unl-outcomes}
 \end{table}
 
 
