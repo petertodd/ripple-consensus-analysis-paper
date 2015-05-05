@@ -77,7 +77,7 @@ hash, the signing hash does not serialize signature fields.
 
 Unlike Bitcoin, transactions increment and decrement account balances; they do
 not directly consume the output of other transactions. To prevent replay
-attacks accounts and transaction have sequence numbers; a transaction is only
+attacks, accounts and transactions have sequence numbers; a transaction is only
 valid if the Sequence number is exactly one greater than the last-valided
 transaction from the same account. Additionally an optional AccountTxnID field
 is available for use within transactions; the transaction is only valid if the
@@ -99,7 +99,7 @@ how exactly does the skiplist work?
 \subsection{Unique Node List}
 
 The actual process of determining what version of the ledger is correct starts
-with the Unique Node Listi, (UNL) a list of public keys meant to be associated
+with the Unique Node List, (UNL) a list of public keys meant to be associated
 with active nodes the node operator believes are
 ``unique''.\cite{ripple-wiki-unl} Ripple Labs suggests that UNL's ``should have
 100+ nodes on them.''\cite{ripple-wiki-unl} and provides a ``starter'' UNL at
@@ -649,7 +649,7 @@ approving the transaction they have confidence that the Free World has approved
 the money transfer.
 
 What's actually happened is Russian cyberwarfare experts created a fake
-consensus uses stolen Swiss and French private keys. Russia of course
+consensus using stolen Swiss and French private keys. Russia of course
 officially signed this fake consensus, as well as the real consensus, taking
 the position this was an above-the-board court ordered operation; China also
 signed, but doesn't officially say why. The wealthy Chinese investor
