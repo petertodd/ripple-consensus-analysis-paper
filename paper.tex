@@ -2,50 +2,108 @@
 \usepackage{url}
 % \usepackage{showframe}
 \usepackage{mathtools}
-\usepackage{tikz}
 \usepackage{multirow}
-\usetikzlibrary{arrows,positioning}
 \begin{document}
-\title{Ripple Consensus Review}
+\title{Ripple Protocol Consensus Algorithm Review}
 \author{Peter Todd}
-\date{FIXME}
+\date{May 11th 2015}
 \maketitle
 
-\section{Activities performed}
+\section{Activities Performed}
 
 The Ripple consensus review investigation had four major activities associated
 with it:
 
 \begin{enumerate}
 
-    \item Reviewed whitepapers and development documentation at ripple.com
+    \item Reviewed whitepapers and development documentation at \url{https://ripple.com}.
 
-    \item Reviewed existing third-party critism.
+    \item Reviewed existing third-party criticism.
 
     \item Setup and run a full node.
 
-    \item Reviewed C++ implementation, specifically the 0.27.4 tag.\footnote{git commit 92812fe7239ffa3ba91649b2ece1e892b866ec2a}
+    \item Reviewed C++ implementation, specifically the 0.27.4 tag of
+        \texttt{rippled}.\footnote{git commit
+    \texttt{92812fe7239ffa3ba91649b2ece1e892b866ec2a} from \url{https://github.com/ripple/rippled}}
 
 \end{enumerate}
 
 
-\section{Overall architecture}
+\section{Overall Architecture}
 
-Ripple has diverged significantly from the original concept of a decentralized
-network representing money explicitly as debt relationship between
-parties.\cite{btcmag-introducing-ripple} While the concept of a debt
-relationship still exists in the form of trust lines between participants, the
-bulk of the codebase and developer documentation now focuses\footnote{For
-    instance the ``Tutorials'' section of the Ripple website only explains how
-    to create transactions that modify the ledger; there is almost no information
-available on how to actually use the trustlines feature.} on the use and
-maintenance of a global ledger of transactions and account balances.
-Additionally a native currency, XRP, has been added, which is used for
-anti-spam transaction fees\footnote{A small amount of XRP is irrovocably
-destroyed for every transaction.}, as well as to serve as a universal currency.
+Ripple has diverged significantly from the original
+concept\cite{btcmag-introducing-ripple} of a decentralized network recording
+the transferral of money explicitly as debt relationships between parties.
+(Figure \ref{fig:orig-ripple}, showing entities A, B, and C participating in a
+transaction) While the concept of a debt relationship still exists in the form
+of trustlines between participants, the bulk of the codebase and developer
+documentation now focuses\footnote{For instance the ``Tutorials'' section of
+the Ripple website only explains how to create transactions that modify the
+ledger; there is almost no information available on how to actually use the
+trustlines feature.} on the use and maintenance of a global ledger of
+transactions and account balances.  Additionally a native currency, XRP, has
+been added, which is used for anti-spam transaction fees\footnote{A small
+amount of XRP is irrovocably destroyed for every transaction.} and to
+serve as a universal currency. (Figure \ref{fig:ripple-labs-ripple})
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{figures/orig-ripple.eps}
+    \caption{Original Ripple Architecture}
+    \label{fig:orig-ripple}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{figures/ripple-labs-ripple.eps}
+    \caption{Ripple Labs Architecture}
+    \label{fig:ripple-labs-ripple}
+\end{figure}
 
 
-\subsection{Hashing and serialization}
+\section{Global Ledger}
+
+Figure \ref{fig:ledger-blockchain} shows the basic cryptographic structure of
+the Ripple ledger. As with Bitcoin, it consists of a set of chain of blocks,
+each consisting of a block header that commits to a previous block and a set of
+new transactions for that block. (via a merkle tree) Additionally each block
+header also commits to a merkelized trie\footnote{Oddly the trie is not binary,
+trading off performance for significantly larger proofs.} of the state of all
+account balances. The block chain doesn't itself deal directly with the
+consensus protocol. Rather validators sign messages as part of the consensus
+protocol, and knowledge of those messages lets Ripple nodes determine the
+correct chain.
+
+Developer documentation about exactly how the ledger is structured is somewhat
+spotty; the descriptions here are mostly based on direct analysis of the
+\texttt{rippled} source code.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{figures/ledger-blockchain.eps}
+    \caption{Ripple Ledger Structure}
+    \label{fig:ledger-blockchain}
+\end{figure}
+
+
+\subsection{Transactions}
+
+Unlike Bitcoin, transactions increment and decrement account balances; they do
+not directly consume the output of other transactions. Transactions are also
+used to setup and modify trustlines. To prevent replay attacks, accounts and
+transactions have sequence numbers; a transaction is only valid if the Sequence
+number is exactly one greater than the last-valided transaction from the same
+account. Additionally an optional AccountTxnID field is available for use
+within transactions; the transaction is only valid if the sending account's
+previously-sent transaction matches the provided hash.
+
+Authentication is performed with a simple signature scheme; a scripting system
+is not available, nor is multisignature support. To implement the latter a
+highly complex single-purpose scheme\cite{ripple-wiki-multisign} has been
+proposed.
+
+
+\subsection{Low-Level Hashing and Serialization}
 
 Though various parts of the Ripple user API's and networking use industry
 standard serialization formats like JSON and Google Protobuf, for
@@ -55,11 +113,11 @@ serialization schemes rarely, if ever, account for the need to create hash
 digests from represented objects.
 
 \begin{equation}
-    \textit{Serialize}(\text{obj}) = t_0 n_0 d_0 + \hdots + t_n n_n d_n
+    \textit{Serialize}(\text{obj}) = t_0+n_0+d_0 + \hdots + t_n+n_n+d_n
 \end{equation}
 
 Hashing of objects generally uses the following scheme, implemented by
-STObject::getHash(), resulting in a $256\text{bit}$ digest:
+\texttt{STObject::getHash()}, resulting in a $256\text{bit}$ digest:
 
 \begin{equation}
     H(\text{obj}) = \text{SHA512}(p + \text{Serialize}(\text{obj}))[0:256\text{bits}]
@@ -73,48 +131,58 @@ implemented by the function STObject::getSigningHash(). Unlike the standard
 hash, the signing hash does not serialize signature fields.
 
 
-\subsection{Transactions}
+\subsection{Open Questions}
 
-Unlike Bitcoin, transactions increment and decrement account balances; they do
-not directly consume the output of other transactions. To prevent replay
-attacks, accounts and transactions have sequence numbers; a transaction is only
-valid if the Sequence number is exactly one greater than the last-valided
-transaction from the same account. Additionally an optional AccountTxnID field
-is available for use within transactions; the transaction is only valid if the
-sending account's previously-sent transaction matches the provided hash.
+\begin{itemize}
 
-Authentication is performed with a simple signature scheme; a scripting system
-is not available, nor is multisignature support. To implement the latter a
-highly complex single-purpose scheme\cite{ripple-wiki-multisign} has been
-proposed.
+    \item How exactly does the block header skiplist work? While the source code
+        refers to a skiplist, the actual block header format appears to only
+        allow block headers to refer to a single previous block header in a
+        linear fashion.
+
+    \item The \texttt{rippled} codebase suggests that in some circumstances account
+        balances can be negative. What are those circumstances exactly?
+
+    \item Do opportunities exist to ``shard'' the Ripple blockchain to improve
+        scaling by distributing load across parallel servers?
+
+    \item What plans exist (if any) to support SPV-style ``lite clients'' in
+        the Ripple protocol?
+
+\end{itemize}
 
 
-\subsection{Ledger}
+\section{Consensus Algorithm}
 
-The exact cryptographic structure of the Ripple ledger isn't well documented;
-the following is based on analysis of the sourcecode.
-
-how exactly does the skiplist work?
+Coming to consensus about the contents of the Ripple ledger is the role of the
+Ripple Protocol Consensus Algorithm\cite{ripple-consensus-paper}. In situations
+where the participants can be determined in advance, consensus algorithms are a
+well studied with a large variety of choices available. With that in mind while
+this review did some basic ``sanity checking'' of the specific algorithm, for
+the most part we assume it works correctly as described. Instead we'll focus on
+the assumptions surrounding the consensus algorithm, and how it can and will be
+used in practice.
 
 
 \subsection{Unique Node List}
 
-The actual process of determining what version of the ledger is correct starts
-with the Unique Node List, (UNL) a list of public keys meant to be associated
-with active nodes the node operator believes are
+Like the vast majority of consensus algorithms, the Ripple consensus algorithm
+starts with a known set of nodes known to be participating in the consensus.
+This Unique Node List, (UNL) is a list of public keys meant to be associated
+with active (validating) nodes the node operator believes are
 ``unique''.\cite{ripple-wiki-unl} Ripple Labs suggests that UNL's ``should have
 100+ nodes on them.''\cite{ripple-wiki-unl} and provides a ``starter'' UNL at
-\url{https://ripple.com/ripple.txt} with $5$ to $8$ nodes.\footnote{Exactly how this UNL is
-generated is unknown; the author downloaded it on multiple occasions getting
-between $5$ to $8$ nodes each time, mostly the same.}
+\url{https://ripple.com/ripple.txt} with $5$ to $8$ nodes.\footnote{Exactly how
+this UNL is generated is unknown; the author downloaded it on multiple
+occasions getting between $5$ to $8$ nodes each time, mostly the same.}
 
-Through the Ripple Protocol Consensus Algorithm\cite{ripple-consensus-paper}
-nodes on the UNL vote to determine the contents of the Ripple ledger. While the
-actual protocol contains a number of rounds of proposals and voting the end
-result can be described as basically a supermajority vote: a transaction is
-only approved if $80\%$ of the UNL of a server agrees with
-it.\cite[3.2]{ripple-consensus-paper} Put another way, if $20\%$ of the UNL
-choose to reject a transaction, it will not be included in the ledger.
+Through the consensus algorithm nodes on the UNL vote to determine the contents
+of the Ripple ledger. While the actual protocol contains a number of rounds of
+proposals and voting the end result can be described as basically a
+supermajority vote: a transaction is only approved if $80\%$ of the UNL of a
+server agrees with it.\cite[3.2]{ripple-consensus-paper} Put another way, if
+$20\%$ of the UNL choose to reject a transaction, it will not be included in
+the ledger.
 
 Different nodes may chose to use different UNLs; if the UNLs do not
 sufficiently overlap global consensus is not guaranteed because different UNL
@@ -206,8 +274,8 @@ any hope of ever recovering the stolen funds.
 A closely related issue is what incentive does a node operator have to publicly
 perform validation services? Ripple currently has no compensation mechanism for
 public validators, yet validation at minimum raises potential legal issues such
-as lawsuits for negligence. Again, the least-risk option is to not publicly
-validate the Ripple ledger.
+as lawsuits for negligence or aiding financial crimes. Again, the least-risk
+option is to not publicly validate the Ripple ledger.
 
 \begin{table}
     \centering
@@ -283,7 +351,7 @@ The attacker exploits a difference in behavior between different
 implementations/versions of the Ripple protocol. The result of the attack can
 be a simple denial of service due to the Ripple network being unable to process
 transactions, or with more sophistication, the attacker can fork the Ripple
-ledger/blockchain and use the fork to doublespend. The attack is stopped by
+ledger/blockchain and use the fork to double-spend. The attack is stopped by
 identifying it, and then distributing software patches. Provided the Ripple
 network is well monitored consensus split attacks can be stopped fairly
 quickly; the March 2013 Bitcoin chain fork\cite{bip50} was resolved in a matter
@@ -303,7 +371,7 @@ Risk factors:
 
 \begin{itemize}
 
-    \item The main implementation of the Ripple protocol, \emph{rippled}, does
+    \item The main implementation of the Ripple protocol, \texttt{rippled}, does
         not cleanly separate the consensus-critical part of the codebase from
         the non-consensus-critical part.\footnote{The consensus-critical
             portions of Bitcoin Core codebase are currently being separated
@@ -411,7 +479,7 @@ Risk factors:
         other attacks on the scalability of the network, reducing the number of
         validators that need to be coerced.
 
-    \item The rippled node implementation does not check full history. This
+    \item The \texttt{rippled} node implementation does not check full history. This
         means if validators sign an invalid ledger, the transactions that make
         it invalid can be hidden from Ripple users. Equally, even with
         detection, the fact that Ripple users can be asked to simply
@@ -450,10 +518,10 @@ Risk factors:
 \end{center}
 
 The attacker inserts a backdoor into a widely used Ripple protocol
-implementation. (e.g. the rippled node software) The attacker may be an
+implementation. (e.g. the \texttt{rippled} node software) The attacker may be an
 internal Ripple Labs employee, an external member of the public submitting a
 pull-request, or they may compromise the software actually downloaded by
-end-users by compromising binary or sourcecode hosting. (e.g. GitHub)
+end-users by compromising binary or source code hosting. (e.g. GitHub)
 
 Risk factors:
 
@@ -464,9 +532,9 @@ Risk factors:
         incentivise that review.
 
     \item Ripple Labs appears to use GitHub - a third party -
-        as their master sourcecode repository, with development happening
+        as their master source code repository, with development happening
         through pull-requests on GitHub. While this does place trust in a
-        third-party, PGP signing sourcecode during development can mitigate
+        third-party, PGP signing source code during development can mitigate
         this risk. However there appears to be no PGP signatures on any git
         commits, giving Ripple Labs little ability to audit who wrote what
         code.
@@ -517,7 +585,7 @@ Risk factors:
         alternate validator implementations are currently infeasible, making it
         difficult to change this situation.
 
-    \item The rippled implementation doesn't yet appear to support separating
+    \item The \texttt{rippled} implementation doesn't yet appear to support separating
         the validation/consensus and signing functionality into different
         machines, or even different user accounts. (possibly Ripple Labs has
         internal-use-only improvements)
@@ -649,7 +717,7 @@ coming in, so they need to leave the port ASAP - with France and Switzerland
 approving the transaction they have confidence that the Free World has approved
 the money transfer.
 
-What's actually happened is Russian cyberwarfare experts created a fake
+What has actually happened is Russian cyberwarfare experts created a fake
 consensus using stolen Swiss and French private keys. Russia of course
 officially signed this fake consensus, as well as the real consensus, taking
 the position this was an above-the-board court ordered operation; China also
@@ -672,6 +740,21 @@ the next ten years while the Chinese courts argue what to do with it.
     \label{fig:attack-flowchart}
 \end{figure}
 
+
+\section{Conclusions and future work}
+
+Nearly all the attack scenarios analysed above are direct outcomes of the need
+for consensus; the actual blockchain technology that records the ledger is
+relatively uninteresting. That the consensus requirement is for global
+consensus rather than the original Ripple's local consensus creates additional
+problems such as co-ordination of UNL's, incentives for such co-ordination, and
+unclear incentives for validating nodes to validate correctly or honestly.
+Finally the requirement of global consensus creates scalability concerns,
+privacy concerns, and jurisdictional concerns.
+
+A key question that should be answered in future work is if the goals of the
+Ripple system need global consensus at all? If global consensus can be avoided,
+or at least it's use minimized, many of these issues may go away.
 
 \bibliographystyle{plain}
 \bibliography{paper}
