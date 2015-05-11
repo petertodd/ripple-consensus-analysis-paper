@@ -16,7 +16,7 @@ with it:
 
 \begin{enumerate}
 
-    \item Reviewed whitepapers and development documentation at \url{https://ripple.com}.
+    \item Reviewed white papers and development documentation at \url{https://ripple.com}.
 
     \item Reviewed existing third-party criticism.
 
@@ -43,7 +43,7 @@ ledger; there is almost no information available on how to actually use the
 trustlines feature.} on the use and maintenance of a global ledger of
 transactions and account balances.  Additionally a native currency, XRP, has
 been added, which is used for anti-spam transaction fees\footnote{A small
-amount of XRP is irrovocably destroyed for every transaction.} and to
+amount of XRP is irrevocably destroyed for every transaction.} and to
 serve as a universal currency. (Figure \ref{fig:ripple-labs-ripple})
 
 \begin{figure}
@@ -98,7 +98,7 @@ within transactions; the transaction is only valid if the sending account's
 previously-sent transaction matches the provided hash.
 
 Authentication is performed with a simple signature scheme; a scripting system
-is not available, nor is multisignature support. To implement the latter a
+is not available, nor is multi-signature support. To implement the latter a
 highly complex single-purpose scheme\cite{ripple-wiki-multisign} has been
 proposed.
 
@@ -200,8 +200,8 @@ Increasing the connectivity past the $20\%$ threshold, as shown in Figure
 what happens to the blockchain? The Ripple Protocol Consensus Algorithm paper
 is unclear on this point. For instance, the loss and restoration of
 connectivity may have been associated with network latency. The paper does
-state that "nodes who’s latency grows larger than a preset bound $b$ are
-removed from all UNLs"\cite[3.4.1]{ripple-consensus-paper} but does not say if
+state that ``nodes whose latency grows larger than a preset bound $b$ are
+removed from all UNLs''\cite[3.4.1]{ripple-consensus-paper} but does not say if
 this removal is meant to be permanent\footnote{In the existing implementation
 restarting the node does reload the UNL set from the config file.} nor if by
 ``all'' they refer to removal from UNLs on all nodes in the network.
@@ -284,8 +284,8 @@ option is to not publicly validate the Ripple ledger.
         \multicolumn{2}{c}{} & \multicolumn{3}{c}{Majority} \\
         \multicolumn{2}{c}{} & $100\%$ & $50\%$ & $10\%$ \\ \cline{3-5}
         \multirow{3}{*}{Local} & $100\%$ & Consensus & DoS & DoS \\ \cline{2-5}
-        ~ & $50\%$ & DoS & DoS & Doublespend \\ \cline{2-5}
-        ~ & $10\%$ & Doublespend & Doublespend & Doublespend \\
+        ~ & $50\%$ & DoS & DoS & Double-spend \\ \cline{2-5}
+        ~ & $10\%$ & Double-spend & Double-spend & Double-spend \\
     \end{tabular}
 
     \caption{Worst-case outcomes of default UNL \% choices}
@@ -293,7 +293,7 @@ option is to not publicly validate the Ripple ledger.
 \end{table}
 
 
-\section{Attack scenarios}
+\section{Attack Scenarios}
 
 To evaluate potential attacks on the Ripple network we look at three factors:
 
@@ -401,13 +401,13 @@ Risk factors:
     \end{tabular}
 \end{center}
 
-The attacker creates large numbers of transactions - either covertely or
+The attacker creates large numbers of transactions - either covertly or
 overtly - until the Ripple network fails due to overload, or more likely,
 Ripple users are priced out of their ability to use the Ripple network.
 Transactions pay a minimum fee per transaction by destroying XRP; the fee per
 transaction is set by a vote between all validators on the UNL list. In the
 short to medium term such an attack would quickly drive up that fee. A
-succesful attack requires deep pockets as the attacker must outspend other
+successful attack requires deep pockets as the attacker must out-spend other
 Ripple users.
 
 
@@ -425,7 +425,7 @@ Risk factors:
         ledger is a threat to the viability of Ripple.
 
     \item A clever attacker wishing to overtly attack the Ripple network can
-        masquerade their traffic as legit economic activity; from the point of
+        masquerade their traffic as legit economic activity. From the point of
         view of Ripple Labs - a major XRP owner - such an attack may not even
         be considered an attack!\footnote{Similar to the debates in the Bitcoin
         ecosystem about whether or not fee-paying uses of the Bitcoin
@@ -434,7 +434,7 @@ Risk factors:
 
     \item Attacking the poor scalability of Ripple is highly synergistic with
         attacks depending on the high centralization of the Ripple network as
-        even ``unsuccesful'' scalability attacks drive further centralization.
+        even ``unsuccessful'' scalability attacks drive further centralization.
         For instance, if the response to a scalability attack is for Ripple
         Labs to beef up the validation nodes they control, and users stop
         running full nodes themselves, the network is more vulnerable to any
@@ -443,7 +443,7 @@ Risk factors:
 \end{itemize}
 
 
-\subsection{Coercion of validators}
+\subsection{Coercion of Validators}
 
 \begin{center}
     \begin{tabular}{c|c|c|c|c}
@@ -455,7 +455,7 @@ Risk factors:
     \end{tabular}
 \end{center}
 
-Validators are coerced through poltical/legal/criminal means into attacking
+Validators are coerced through political/legal/criminal means into attacking
 some or all Ripple users by preventing valid transactions from entering the
 ledger (DoS) and/or by allowing invalid transactions to enter the ledger.
 (theft) The cost estimates above are very rough, and assuming the attack is via
@@ -496,19 +496,19 @@ Risk factors:
         validators to create invalid ledgers by making it likely for the result
         of the attack to be DoS rather than profitable theft. In short, the
         attack would simply shut the Ripple network down for all users rather
-        than result in a succesful theft.
+        than result in a successful theft.
 
     \item Some people would argue that the recently announced
         plans\cite{cointelegraph-ripple-aml} to require verified user
         identification to use the Ripple network in the near future are an
-        example of a succesful coercion attack. It can be argued that Ripple
+        example of a successful coercion attack. It can be argued that Ripple
         Labs is increasing the risk of coercion attacks by simultaneously
         adopting a ``regulator friendly'' position and promoting the use of
         Ripple across many different jurisdictions.
 
 \end{itemize}
 
-\subsection{Software backdoor}
+\subsection{Software Backdoor}
 
 \begin{center}
     \begin{tabular}{c|c|c|c|c}
@@ -543,7 +543,7 @@ Risk factors:
         download any of their software.} While binaries are available, the
         mechanism to download them is a Ubuntu package repository over insecure
         HTTP; while source code is available through git, neither commits nor
-        release tags are signed in anyway. \textbf{This is a serious ommission
+        release tags are signed in anyway. \textbf{This is a serious omission
         that has lead to significant monetary losses in the past.} Ripple Labs
         should be following industry best-practice by signing git commits and
         tags\cite{wladimir-git-pgp} as well as PGP signing their Ubuntu
@@ -552,7 +552,7 @@ Risk factors:
 \end{itemize}
 
 
-\subsection{Theft of validator secret keys}
+\subsection{Theft of Validator Secret Keys}
 
 \begin{center}
     \begin{tabular}{c|c|c|c|c}
@@ -564,7 +564,7 @@ Risk factors:
 The attacker steals illegitimate control of the secret keys used by validators,
 particularly the validators in the default UNL. The theft may happen via an
 exploit, backdoor, compromised hosting company, etc. While not useful for the
-attacker in of itself, the stolen keys can be used for further atttacks such as
+attacker in of itself, the stolen keys can be used for further attacks such as
 DoS or a simulated ledger attack.
 
 A closely related attack is to compromise the Ripple website, and trick people
@@ -576,10 +576,10 @@ Risk factors:
 \begin{itemize}
 
     \item Due to the high centralization of UNL validators, a relatively small
-        number of validators need to be compromised for a succesful attack.
+        number of validators need to be compromised for a successful attack.
 
     \item Most validators are running nearly the same, if not the exact same,
-        software, making it likely for backdoor/exploit attack to succesfully
+        software, making it likely for backdoor/exploit attack to successfully
         exfiltrate the secret keys. Due to the high consensus-critical
         complexity of the Ripple protocol and lack of a consensus library
         alternate validator implementations are currently infeasible, making it
@@ -602,7 +602,7 @@ Risk factors:
 \end{itemize}
 
 
-\subsection{Simulated ledger}
+\subsection{Simulated Ledger}
 
 \begin{center}
     \begin{tabular}{c|c|c|c|c}
@@ -615,7 +615,7 @@ An attacker with the ability to create signatures from nodes on the UNL can
 create an entirely simulated ledger in parallel to the ``official'' Ripple
 ledger, containing any transaction the attacker wishes. In conjunction with
 sybil attacking the target the attacker can then perform double-spend attacks.
-Sybil attacks are relatively cheap, requiring just the aquisition of a large
+Sybil attacks are relatively cheap, requiring just the acquisition of a large
 number of IP addresses, e.g. via cloud hosting and/or botnet rental. In some
 situations sybil attacks can even have zero cost, such as the internal IT staff
 within the target with access to network infrastructure, the target's ISP, or
@@ -662,12 +662,12 @@ Risk factors:
 \end{itemize}
 
 
-\section{Attack flowchart}
+\section{Attack Flowchart}
 
 Figure \ref{fig:attack-flowchart} shows some of the stronger synergies between
 different attacks.
 
-Let's go through a full scenario, involving multiple attacks at once.  Ripple
+Let's go through a full scenario involving multiple attacks at once.  Ripple
 Labs has diversified their default UNL such that the $80\%$ of the validators
 are run by publicly known institutions evenly spread across the following five
 countries, United States, France, Switzerland, Russia, and China, with the
@@ -693,16 +693,16 @@ quitting - the Tor network is too slow to handle the load, and they worry
 they're real identities will be discovered if they move their validator nodes
 to clearnet hosting.
 
-At this point Russia with $20\%$ UNL control could simply vote to freeze
-Shell's assets, achieving a denial-of-service. However, it's decided it would
-be better if the funds were actually recovered instead.
+At this point Russia's $20\%$ UNL control could simply vote to freeze Shell's
+assets, achieving a denial-of-service. However, it's decided it would be better
+if the funds were actually recovered instead.
 
 Russia sets up a fake Chinese oil importer, hiring another Chinese company to
 do the actual transportation, and has them contact Shell asking to purchase
 some oil. They also find a wealthy Chinese investor with \$100 million USD
 worth of yuan in an account with a major Chinese bank, and has that investor
 ``invest'' in the new importer. Meanwhile Russia's cyberwarfare team gets to
-work, succesfully compromising the Swiss and French validation nodes, and
+work, successfully compromising the Swiss and French validation nodes, and
 using the fact that they have agents in major Ukrainian ISPs to sybil attack
 the Ukrainian-based Shell office actually handling the sale. They can't
 compromise the US nodes - they're on a newer version - but they do happen to
@@ -741,7 +741,7 @@ the next ten years while the Chinese courts argue what to do with it.
 \end{figure}
 
 
-\section{Conclusions and future work}
+\section{Conclusions and Future Work}
 
 Nearly all the attack scenarios analysed above are direct outcomes of the need
 for consensus; the actual blockchain technology that records the ledger is
@@ -754,7 +754,7 @@ privacy concerns, and jurisdictional concerns.
 
 A key question that should be answered in future work is if the goals of the
 Ripple system need global consensus at all? If global consensus can be avoided,
-or at least it's use minimized, many of these issues may go away.
+or at least its use minimized, many of these issues may go away.
 
 \bibliographystyle{plain}
 \bibliography{paper}
