@@ -92,7 +92,7 @@ not directly consume the output of other transactions. Transactions are also
 used to setup and modify trustlines. To prevent replay attacks, accounts and
 transactions have sequence numbers; a transaction is only valid if the Sequence
 number is exactly one greater than the last-valided transaction from the same
-account. Additionally an optional AccountTxnID field is available for use
+account. Additionally an optional \texttt{AccountTxnID} field is available for use
 within transactions; the transaction is only valid if the sending account's
 previously-sent transaction matches the provided hash.
 
